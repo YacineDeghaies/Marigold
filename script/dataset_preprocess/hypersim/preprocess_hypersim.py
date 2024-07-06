@@ -9,7 +9,7 @@ import h5py
 import numpy as np
 import pandas as pd
 from hypersim_util import dist_2_depth, tone_map
-from tqdm import tqdm
+from tqdm import tqdm # for showing a progress bar during a loop
 
 IMG_WIDTH = 1024
 IMG_HEIGHT = 768
@@ -25,6 +25,7 @@ if "__main__" == __name__:
     parser.add_argument("--dataset_dir", type=str, default="data/Hypersim/raw_data")
     parser.add_argument("--output_dir", type=str, default="data/Hypersim/processed")
 
+    # extract the passed arguments from the command line input
     args = parser.parse_args()
 
     split_csv = args.split_csv
@@ -32,12 +33,18 @@ if "__main__" == __name__:
     output_dir = args.output_dir
 
     # %%
-    raw_meta_df = pd.read_csv(split_csv)
+    # take only the images where the column included_in_public_release is set to True
+    raw_meta_df = pd.read_csv(split_csv) 
     meta_df = raw_meta_df[raw_meta_df.included_in_public_release].copy()
 
     # %%
     for split in ["train", "val", "test"]:
+        # this is where the estimated depth maps goes after each phase
+        
+        #define the path of the output
         split_output_dir = os.path.join(output_dir, split)
+        
+        #create the directory of the output
         os.makedirs(split_output_dir)
 
         split_meta_df = meta_df[meta_df.split_partition_name == split].copy()
