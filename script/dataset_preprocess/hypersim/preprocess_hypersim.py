@@ -9,12 +9,13 @@ import h5py
 import numpy as np
 import pandas as pd
 from hypersim_util import dist_2_depth, tone_map
-from tqdm import tqdm # for showing a progress bar during a loop
+from tqdm import tqdm # for showing a progress bar inside loops
 
 IMG_WIDTH = 1024
 IMG_HEIGHT = 768
 FOCAL_LENGTH = 886.81
 
+## Parse arguments
 if "__main__" == __name__:
     parser = argparse.ArgumentParser()
     parser.add_argument(
@@ -39,7 +40,6 @@ if "__main__" == __name__:
 
     # %%
     for split in ["train", "val", "test"]:
-        # this is where the estimated depth maps goes after each phase
         
         #define the path of the output
         split_output_dir = os.path.join(output_dir, split)
@@ -60,6 +60,8 @@ if "__main__" == __name__:
         split_meta_df["depth_max"] = np.nan
         split_meta_df["invalid_ratio"] = np.nan
 
+        #iterrows generates an iterators that yields index and row data as tuples
+        #tqdm is a lib for creating progress bars. Helpful for long running loops
         for i, row in tqdm(split_meta_df.iterrows(), total=len(split_meta_df)):
             # Load data
             rgb_path = os.path.join(
@@ -80,6 +82,8 @@ if "__main__" == __name__:
                 f"scene_{row.camera_name}_geometry_hdf5",
                 f"frame.{row.frame_id:04d}.render_entity_id.hdf5",
             )
+            #after defining the paths to the data, we need to ensure the paths actually exists
+            #if defiend path don't exist an AssertionError will be raised
             assert os.path.exists(os.path.join(dataset_dir, rgb_path))
             assert os.path.exists(os.path.join(dataset_dir, dist_path))
 
@@ -115,7 +119,7 @@ if "__main__" == __name__:
             rgb_path = os.path.join(scene_path, rgb_name)
             cv2.imwrite(
                 os.path.join(split_output_dir, rgb_path),
-                cv2.cvtColor(rgb_int, cv2.COLOR_RGB2BGR),
+                cv2.cvtColor(rgb_int, cv2.COLOR_RGB2BGR), #convert it to BGR for future processing using opencv
             )
 
             plane_depth *= 1000.0
